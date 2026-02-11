@@ -82,12 +82,42 @@
     }
 
     @media (max-width: 900px) {
+      .frame {
+        aspect-ratio: auto;
+        min-height: 86vh;
+      }
+
       .layout {
+        position: relative;
+        inset: 0;
+        height: 100%;
         grid-template-columns: 1fr;
+        grid-template-rows: 52vh auto;
+        gap: 0.8rem;
+      }
+
+      canvas {
+        height: 52vh;
       }
 
       .left {
         order: 2;
+        font-size: 0.98rem;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .frame {
+        min-height: 92vh;
+        padding: 0.9rem;
+      }
+
+      .layout {
+        grid-template-rows: 50vh auto;
+      }
+
+      .left {
+        font-size: 0.95rem;
       }
     }
   </style>
@@ -118,6 +148,14 @@
       treeX: 0.65, // posición horizontal del árbol (0 a 1)
       groundY: 0.86, // altura del suelo (0 a 1)
     };
+
+    // ====== COPA (ajusta aquí) ======
+    const CROWN_DENSITY = 1.35; // 1.0 = normal, 1.35 = súper tupido
+    const CROWN_RADIUS_FACTOR = 0.19; // tamaño base de copa
+    const JITTER_RANGE = 1.4; // menos = menos huecos
+    const HEART_SIZE_MIN = 3.2;
+    const HEART_SIZE_MAX = 6.4;
+    const FILL_ALPHA = 0.9;
 
     const canvas = document.getElementById("scene");
     const ctx = canvas.getContext("2d");
@@ -156,24 +194,53 @@
       return { x, y: -y };
     }
 
-    function initLeaves() {
-      state.leaves = [];
-      const count = 380;
-      for (let i = 0; i < count; i += 1) {
+    function buildCrown() {
+      const crownHearts = [];
+      const palette = [350, 355, 358, 5, 8, 12, 340];
+      const areaFactor = Math.max(0.9, Math.min(1.6, (state.w * state.h) / (820 * 460)));
+      const outlineCount = Math.floor(2600 * CROWN_DENSITY * areaFactor);
+      const fillCount = Math.floor(8200 * CROWN_DENSITY * areaFactor);
+      const baseRadius = CROWN_RADIUS_FACTOR * Math.min(state.w, state.h);
+
+      // Contorno del corazón
+      for (let i = 0; i < outlineCount; i += 1) {
         const t = rand(0, Math.PI * 2);
         const p = heartPoint(t);
-        const scale = rand(0.9, 1.28);
-        const size = rand(6, 16);
-        const palette = [350, 355, 358, 5, 8, 12, 340];
+        const nx = p.x * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
+        const ny = p.y * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
         const hue = palette[Math.floor(rand(0, palette.length))];
-        state.leaves.push({
-          x: p.x * 6.6 * scale,
-          y: p.y * 6.6 * scale,
-          size,
+        crownHearts.push({
+          x: nx,
+          y: ny,
+          size: rand(HEART_SIZE_MIN, HEART_SIZE_MAX),
           hue,
-          alpha: rand(0.75, 1),
+          alpha: rand(0.8, 1),
         });
       }
+
+      // Relleno interno (evita huecos)
+      for (let i = 0; i < fillCount; i += 1) {
+        const t = rand(0, Math.PI * 2);
+        const p = heartPoint(t);
+        // sesgo fuerte hacia el centro para rellenar huecos
+        const inner = Math.pow(rand(0.0, 1.0), 2.2);
+        const nx = p.x * (baseRadius * (0.2 + inner * 0.8)) + rand(-JITTER_RANGE, JITTER_RANGE);
+        const ny = p.y * (baseRadius * (0.2 + inner * 0.8)) + rand(-JITTER_RANGE, JITTER_RANGE);
+        const hue = palette[Math.floor(rand(0, palette.length))];
+        crownHearts.push({
+          x: nx,
+          y: ny,
+          size: rand(HEART_SIZE_MIN, HEART_SIZE_MAX) * rand(0.9, 1.2),
+          hue,
+          alpha: rand(FILL_ALPHA, 0.95),
+        });
+      }
+
+      return crownHearts;
+    }
+
+    function initLeaves() {
+      state.leaves = buildCrown();
     }
 
     function drawHeart(x, y, size, color, alpha, rotation = 0) {
@@ -197,7 +264,7 @@
       for (let i = 0; i < visible; i += 1) {
         const leaf = state.leaves[i];
         const color = `hsla(${leaf.hue}, 92%, 58%, ${leaf.alpha})`;
-        drawHeart(centerX + leaf.x, centerY + leaf.y, leaf.size * 0.08, color, leaf.alpha);
+        drawHeart(centerX + leaf.x, centerY + leaf.y, leaf.size * 0.085, color, leaf.alpha);
       }
     }
 
@@ -264,16 +331,20 @@
 
       const trunkHeight = state.h * 0.46;
       const topY = baseY - trunkHeight * trunkProgress;
-      ctx.lineWidth = 14;
+      ctx.lineWidth = 12;
       ctx.beginPath();
       ctx.moveTo(baseX, baseY);
       ctx.lineTo(baseX + sway * 10, topY);
       ctx.stroke();
 
-      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.25, baseX + 34 + sway * 8, baseY - trunkHeight * 0.45, branchProgress, 9);
-      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.42, baseX - 30 + sway * 6, baseY - trunkHeight * 0.58, branchProgress, 8);
-      drawBranch(baseX + sway * 3, baseY - trunkHeight * 0.6, baseX + 24 + sway * 7, baseY - trunkHeight * 0.78, branchProgress, 7);
-      drawBranch(baseX + sway * 3, baseY - trunkHeight * 0.7, baseX - 22 + sway * 5, baseY - trunkHeight * 0.88, branchProgress, 6);
+      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.22, baseX + 42 + sway * 10, baseY - trunkHeight * 0.44, branchProgress, 9);
+      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.38, baseX - 40 + sway * 8, baseY - trunkHeight * 0.58, branchProgress, 8);
+      drawBranch(baseX + sway * 3, baseY - trunkHeight * 0.56, baseX + 34 + sway * 9, baseY - trunkHeight * 0.78, branchProgress, 7);
+      drawBranch(baseX + sway * 3, baseY - trunkHeight * 0.68, baseX - 32 + sway * 7, baseY - trunkHeight * 0.9, branchProgress, 6);
+
+      drawBranch(baseX + sway * 1, baseY - trunkHeight * 0.3, baseX + 20 + sway * 6, baseY - trunkHeight * 0.5, branchProgress, 6);
+      drawBranch(baseX + sway * 1, baseY - trunkHeight * 0.48, baseX - 20 + sway * 5, baseY - trunkHeight * 0.65, branchProgress, 5);
+      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.62, baseX + 18 + sway * 5, baseY - trunkHeight * 0.84, branchProgress, 5);
 
       ctx.restore();
     }
@@ -375,7 +446,7 @@
 
       const sway = Math.sin(t * 1.1) * 0.6;
       drawTree(state.w * CONFIG.treeX, groundY, easeOutCubic(state.treeGrow), easeOutCubic(state.branchGrow), sway);
-      drawLeaves(state.w * CONFIG.treeX, groundY - state.h * 0.36, easeOutCubic(state.leavesGrow));
+      drawLeaves(state.w * CONFIG.treeX, groundY - state.h * 0.34, easeOutCubic(state.leavesGrow));
 
       if (state.leavesGrow > 0.3) {
         spawnFalling();
