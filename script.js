@@ -33,18 +33,20 @@ function heartPoint(t) {
 
 function initLeaves() {
   state.leaves = [];
-  const count = 220;
+  const count = 320;
   for (let i = 0; i < count; i += 1) {
     const t = rand(0, Math.PI * 2);
     const p = heartPoint(t);
-    const scale = rand(0.95, 1.15);
-    const radius = rand(5, 14);
+    const scale = rand(0.9, 1.25);
+    const radius = rand(6, 16);
+    const palette = [350, 355, 358, 5, 10, 340];
+    const hue = palette[Math.floor(rand(0, palette.length))];
     state.leaves.push({
-      x: p.x * 7 * scale,
-      y: p.y * 7 * scale,
+      x: p.x * 6.5 * scale,
+      y: p.y * 6.5 * scale,
       size: radius,
-      hue: rand(340, 360),
-      alpha: rand(0.7, 1),
+      hue,
+      alpha: rand(0.75, 1),
     });
   }
 }
@@ -54,8 +56,8 @@ function spawnFalling() {
   if (Math.random() < 0.35) {
     const leaf = state.leaves[Math.floor(rand(0, state.leaves.length))];
     state.falling.push({
-      x: leaf.x + state.width * 0.6,
-      y: leaf.y + state.height * 0.35,
+      x: leaf.x + state.width * 0.55,
+      y: leaf.y + state.height * 0.32,
       size: rand(6, 12),
       vx: rand(-0.25, 0.25),
       vy: rand(0.5, 1.3),
@@ -96,9 +98,9 @@ function drawTrunk(baseX, baseY, height, progress) {
   ctx.lineWidth = 8;
   ctx.beginPath();
   ctx.moveTo(baseX, baseY - trunkHeight * 0.35);
-  ctx.lineTo(baseX + 40, baseY - trunkHeight * 0.55);
+  ctx.lineTo(baseX + 32, baseY - trunkHeight * 0.5);
   ctx.moveTo(baseX, baseY - trunkHeight * 0.6);
-  ctx.lineTo(baseX - 36, baseY - trunkHeight * 0.75);
+  ctx.lineTo(baseX - 28, baseY - trunkHeight * 0.72);
   ctx.stroke();
   ctx.restore();
 }
@@ -133,11 +135,11 @@ function render(timestamp) {
 
   ctx.clearRect(0, 0, state.width, state.height);
 
-  const baseX = state.width * 0.6;
-  const baseY = state.height * 0.88;
+  const baseX = state.width * 0.55;
+  const baseY = state.height * 0.86;
 
-  drawTrunk(baseX, baseY, state.height * 0.6, state.trunkGrow);
-  drawLeaves(baseX, baseY - state.height * 0.48, state.leavesGrow);
+  drawTrunk(baseX, baseY, state.height * 0.45, state.trunkGrow);
+  drawLeaves(baseX, baseY - state.height * 0.36, state.leavesGrow);
   spawnFalling();
   drawFalling();
 
