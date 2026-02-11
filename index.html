@@ -1,52 +1,405 @@
 ﻿<!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Árbol de Corazones</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Quicksand:wght@400;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <main class="scene">
-      <section class="card">
-        <div class="intro" id="intro">
-          <div class="intro-heart" id="intro-heart"></div>
-          <div class="intro-text">San Valentín</div>
-          <div class="intro-line"></div>
-          <div class="intro-pointer" id="intro-pointer">Toca</div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>San Valentín</title>
+  <style>
+    :root {
+      --bg: #f4e9df;
+      --ink: #4a3c34;
+      --accent: #d03c3c;
+      --accent-2: #ff6b81;
+      --accent-3: #ff9bb3;
+      --ground: rgba(74, 60, 52, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: #f7eee4;
+      color: var(--ink);
+      font-family: "Georgia", "Times New Roman", serif;
+    }
+
+    .frame {
+      width: min(1200px, 92vw);
+      aspect-ratio: 16 / 9;
+      background: var(--bg);
+      border-radius: 28px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.12);
+      padding: clamp(1.2rem, 2.5vw, 2.6rem);
+    }
+
+    .layout {
+      position: absolute;
+      inset: clamp(1rem, 2vw, 2.2rem);
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: clamp(1rem, 3vw, 2.4rem);
+      align-items: center;
+    }
+
+    .left {
+      align-self: center;
+      font-size: clamp(0.9rem, 1.4vw, 1.15rem);
+      line-height: 1.7;
+    }
+
+    .type-line {
+      min-height: 1.6em;
+      margin: 0 0 0.8rem 0;
+      white-space: pre-wrap;
+    }
+
+    .signature {
+      margin-top: 0.6rem;
+    }
+
+    .counter {
+      margin-top: 1.2rem;
+      font-size: clamp(0.9rem, 1.3vw, 1.1rem);
+    }
+
+    .counter strong {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.2rem;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .left {
+        order: 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <div class="layout">
+      <div class="left">
+        <div class="type-line" id="title"></div>
+        <div class="type-line" id="body"></div>
+        <div class="type-line signature" id="signature"></div>
+        <div class="counter" id="counter-wrap">
+          <strong>Mi amor por ti comenzó hace…</strong>
+          <div id="counter"></div>
         </div>
+      </div>
+      <canvas id="scene"></canvas>
+    </div>
+  </div>
 
-        <div class="content">
-          <div class="letter" id="letter">
-            <p class="eyebrow">Para el amor de mi vida:</p>
-            <p class="line line-1">
-              Si pudiera elegir un lugar<br />
-              seguro, sería a tu lado.
-            </p>
-            <p class="line line-2">
-              Cuanto mas tiempo estoy<br />
-              contigo más te amo.
-            </p>
-            <p class="signature line line-3">— I love You!</p>
+  <script>
+    // ====== EDITA AQUÍ ======
+    const CONFIG = {
+      startDate: "2024-01-01T00:00:00",
+      title: "Para el amor de mi vida:",
+      body: "Si pudiera elegir un lugar \nseguro, sería a tu lado.\n\nCuanto mas tiempo estoy \ncontigo más te amo.",
+      signature: "-- I Love You!",
+      treeX: 0.65, // posición horizontal del árbol (0 a 1)
+      groundY: 0.86, // altura del suelo (0 a 1)
+    };
 
-            <div class="counter line line-4">
-              <div class="counter-label">Mi amor por ti comenzó hace...</div>
-              <div class="counter-time" id="counter">00 días 00 horas 00 minutos 00 segundos</div>
-            </div>
-          </div>
+    const canvas = document.getElementById("scene");
+    const ctx = canvas.getContext("2d");
 
-          <div class="canvas-wrap">
-            <canvas id="tree"></canvas>
-          </div>
-        </div>
+    const state = {
+      w: 0,
+      h: 0,
+      leaves: [],
+      falling: [],
+      startTime: new Date(CONFIG.startDate),
+      animStart: 0,
+      phaseStart: 0,
+      started: false,
+      dot: { x: 0, y: 0, vy: 0, bounces: 0, active: false },
+      treeGrow: 0,
+      branchGrow: 0,
+      leavesGrow: 0,
+    };
 
-        <div class="baseline"></div>
-      </section>
-    </main>
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width * devicePixelRatio);
+      canvas.height = Math.floor(rect.height * devicePixelRatio);
+      ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+      state.w = rect.width;
+      state.h = rect.height;
+    }
 
-    <script src="script.js"></script>
-  </body>
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function heartPoint(t) {
+      const x = 16 * Math.pow(Math.sin(t), 3);
+      const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+      return { x, y: -y };
+    }
+
+    function initLeaves() {
+      state.leaves = [];
+      const count = 380;
+      for (let i = 0; i < count; i += 1) {
+        const t = rand(0, Math.PI * 2);
+        const p = heartPoint(t);
+        const scale = rand(0.9, 1.28);
+        const size = rand(6, 16);
+        const palette = [350, 355, 358, 5, 8, 12, 340];
+        const hue = palette[Math.floor(rand(0, palette.length))];
+        state.leaves.push({
+          x: p.x * 6.6 * scale,
+          y: p.y * 6.6 * scale,
+          size,
+          hue,
+          alpha: rand(0.75, 1),
+        });
+      }
+    }
+
+    function drawHeart(x, y, size, color, alpha, rotation = 0) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(rotation);
+      ctx.scale(size, size);
+      ctx.beginPath();
+      ctx.moveTo(0, -2.5);
+      ctx.bezierCurveTo(2.4, -5.2, 6, -2.2, 0, 4.4);
+      ctx.bezierCurveTo(-6, -2.2, -2.4, -5.2, 0, -2.5);
+      ctx.closePath();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawLeaves(centerX, centerY, progress) {
+      const visible = Math.floor(state.leaves.length * progress);
+      for (let i = 0; i < visible; i += 1) {
+        const leaf = state.leaves[i];
+        const color = `hsla(${leaf.hue}, 92%, 58%, ${leaf.alpha})`;
+        drawHeart(centerX + leaf.x, centerY + leaf.y, leaf.size * 0.08, color, leaf.alpha);
+      }
+    }
+
+    function spawnFalling() {
+      if (state.falling.length > 70) return;
+      if (Math.random() < 0.3) {
+        const leaf = state.leaves[Math.floor(rand(0, state.leaves.length))];
+        state.falling.push({
+          x: leaf.x + state.w * CONFIG.treeX,
+          y: leaf.y + state.h * 0.32,
+          size: rand(6, 12),
+          vx: rand(-0.6, -0.15),
+          vy: rand(0.45, 1.2),
+          rot: rand(0, Math.PI * 2),
+          spin: rand(-0.02, 0.02),
+          alpha: rand(0.6, 0.95),
+          bounce: 0,
+        });
+      }
+    }
+
+    function drawFalling(groundY) {
+      state.falling.forEach((leaf) => {
+        leaf.x += leaf.vx + Math.sin(leaf.y * 0.02) * 0.2;
+        leaf.y += leaf.vy;
+        leaf.vy += 0.01;
+        leaf.rot += leaf.spin;
+
+        if (leaf.y > groundY - 4 && leaf.bounce < 2) {
+          leaf.y = groundY - 4;
+          leaf.vy *= -0.4;
+          leaf.vx *= 0.8;
+          leaf.bounce += 1;
+        }
+
+        leaf.alpha -= 0.002;
+        drawHeart(leaf.x, leaf.y, leaf.size * 0.08, "#e84d6a", Math.max(leaf.alpha, 0), leaf.rot);
+      });
+      state.falling = state.falling.filter((leaf) => leaf.y < groundY + 30 && leaf.alpha > 0);
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function lerp(a, b, t) {
+      return a + (b - a) * t;
+    }
+
+    function drawBranch(x1, y1, x2, y2, progress, width) {
+      const px = lerp(x1, x2, progress);
+      const py = lerp(y1, y2, progress);
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(px, py);
+      ctx.stroke();
+    }
+
+    function drawTree(baseX, baseY, trunkProgress, branchProgress, sway) {
+      ctx.save();
+      ctx.strokeStyle = "#8b5a2b";
+      ctx.lineCap = "round";
+
+      const trunkHeight = state.h * 0.46;
+      const topY = baseY - trunkHeight * trunkProgress;
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(baseX, baseY);
+      ctx.lineTo(baseX + sway * 10, topY);
+      ctx.stroke();
+
+      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.25, baseX + 34 + sway * 8, baseY - trunkHeight * 0.45, branchProgress, 9);
+      drawBranch(baseX + sway * 2, baseY - trunkHeight * 0.42, baseX - 30 + sway * 6, baseY - trunkHeight * 0.58, branchProgress, 8);
+      drawBranch(baseX + sway * 3, baseY - trunkHeight * 0.6, baseX + 24 + sway * 7, baseY - trunkHeight * 0.78, branchProgress, 7);
+      drawBranch(baseX + sway * 3, baseY - trunkHeight * 0.7, baseX - 22 + sway * 5, baseY - trunkHeight * 0.88, branchProgress, 6);
+
+      ctx.restore();
+    }
+
+    function updateCounter() {
+      const now = new Date();
+      const diff = Math.max(0, now - state.startTime);
+      const totalSeconds = Math.floor(diff / 1000);
+      const days = Math.floor(totalSeconds / 86400);
+      const hours = Math.floor((totalSeconds % 86400) / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      const counter = document.getElementById("counter");
+      counter.textContent = `${days} días ${String(hours).padStart(2, "0")} horas ${String(minutes).padStart(2, "0")} minutos ${String(seconds).padStart(2, "0")} segundos`;
+    }
+
+    // ====== MAQUINA DE ESCRIBIR ======
+    const titleEl = document.getElementById("title");
+    const bodyEl = document.getElementById("body");
+    const signatureEl = document.getElementById("signature");
+
+    function typeText(el, text, speed, callback) {
+      let i = 0;
+      function step() {
+        el.textContent = text.slice(0, i);
+        i += 1;
+        if (i <= text.length) {
+          setTimeout(step, speed);
+        } else if (callback) {
+          callback();
+        }
+      }
+      step();
+    }
+
+    // ====== ANIMACIÓN PRINCIPAL ======
+    function startAnimation() {
+      state.started = true;
+      state.animStart = performance.now();
+      state.dot.active = true;
+      state.dot.x = state.w * CONFIG.treeX;
+      state.dot.y = state.h * 0.1;
+      state.dot.vy = 0;
+      state.dot.bounces = 0;
+
+      typeText(titleEl, CONFIG.title, 35, () => {
+        typeText(bodyEl, CONFIG.body, 20, () => {
+          typeText(signatureEl, CONFIG.signature, 35);
+        });
+      });
+    }
+
+    function updateDot(groundY) {
+      const dot = state.dot;
+      if (!dot.active) return;
+
+      dot.vy += 0.5; // gravedad
+      dot.y += dot.vy;
+
+      if (dot.y >= groundY - 6) {
+        dot.y = groundY - 6;
+        dot.vy *= -0.5;
+        dot.bounces += 1;
+        if (Math.abs(dot.vy) < 1 || dot.bounces > 4) {
+          dot.active = false;
+          dot.y = groundY - 6;
+        }
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = "#d03c3c";
+      ctx.arc(dot.x, dot.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function render(time) {
+      if (!state.started) return;
+      ctx.clearRect(0, 0, state.w, state.h);
+
+      const groundY = state.h * CONFIG.groundY;
+
+      // suelo
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ground");
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, groundY);
+      ctx.lineTo(state.w, groundY);
+      ctx.stroke();
+
+      updateDot(groundY);
+
+      const t = (time - state.animStart) / 1000;
+
+      // crecimiento del árbol
+      state.treeGrow = Math.min(1, Math.max(0, (t - 1.2) / 1.2));
+      state.branchGrow = Math.min(1, Math.max(0, (t - 1.6) / 1.2));
+      state.leavesGrow = Math.min(1, Math.max(0, (t - 2.1) / 1.8));
+
+      const sway = Math.sin(t * 1.1) * 0.6;
+      drawTree(state.w * CONFIG.treeX, groundY, easeOutCubic(state.treeGrow), easeOutCubic(state.branchGrow), sway);
+      drawLeaves(state.w * CONFIG.treeX, groundY - state.h * 0.36, easeOutCubic(state.leavesGrow));
+
+      if (state.leavesGrow > 0.3) {
+        spawnFalling();
+        drawFalling(groundY);
+      }
+
+      requestAnimationFrame(render);
+    }
+
+    function init() {
+      resize();
+      initLeaves();
+      updateCounter();
+      setInterval(updateCounter, 1000);
+      startAnimation();
+      requestAnimationFrame(render);
+    }
+
+    window.addEventListener("resize", () => {
+      resize();
+      initLeaves();
+    });
+
+    init();
+  </script>
+</body>
 </html>
