@@ -153,8 +153,8 @@
     const CROWN_DENSITY = 1.35; // 1.0 = normal, 1.6 = súper tupido
     const CROWN_RADIUS_FACTOR = 0.2; // tamaño base de copa
     const JITTER_RANGE = 1.2; // menos = menos huecos
-    const HEART_SIZE_MIN = 5.4; // +25%
-    const HEART_SIZE_MAX = 10.5; // +25%
+    const HEART_SIZE_MIN = 7.02; // +30%
+    const HEART_SIZE_MAX = 13.65; // +30%
     const FILL_ALPHA = 0.92;
     const HEART_COLORS = [
       { h: 350, s: 92, l: [55, 65] }, // rojo
@@ -206,7 +206,7 @@
       const palette = HEART_COLORS;
       const areaFactor = Math.max(0.9, Math.min(1.6, (state.w * state.h) / (820 * 460)));
       const outlineCount = Math.floor(2600 * CROWN_DENSITY * areaFactor);
-      const fillCount = Math.floor(7200 * CROWN_DENSITY * areaFactor); // 20% menos
+      const fillCount = Math.floor(3600 * CROWN_DENSITY * areaFactor); // 50% menos
       const baseRadius = CROWN_RADIUS_FACTOR * Math.min(state.w, state.h);
 
       // Contorno del corazón
