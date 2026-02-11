@@ -199,7 +199,7 @@
       const palette = [350, 355, 358, 5, 8, 12, 340];
       const areaFactor = Math.max(0.9, Math.min(1.6, (state.w * state.h) / (820 * 460)));
       const outlineCount = Math.floor(2600 * CROWN_DENSITY * areaFactor);
-      const fillCount = Math.floor(9000 * CROWN_DENSITY * areaFactor);
+      const fillCount = Math.floor(7200 * CROWN_DENSITY * areaFactor); // 20% menos
       const baseRadius = CROWN_RADIUS_FACTOR * Math.min(state.w, state.h);
 
       // Contorno del corazón
