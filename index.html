@@ -206,7 +206,7 @@
       const palette = HEART_COLORS;
       const areaFactor = Math.max(0.9, Math.min(1.6, (state.w * state.h) / (820 * 460)));
       const outlineCount = Math.floor(2600 * CROWN_DENSITY * areaFactor);
-      const fillCount = Math.floor(1800 * CROWN_DENSITY * areaFactor); // 50% menos adicional
+      const fillCount = Math.floor(900 * CROWN_DENSITY * areaFactor); // 50% menos adicional
       const baseRadius = CROWN_RADIUS_FACTOR * Math.min(state.w, state.h);
 
       // Contorno del corazón
@@ -309,9 +309,9 @@
 
     function drawFalling(groundY) {
       state.falling.forEach((leaf) => {
-        leaf.x += (leaf.vx + Math.sin(leaf.y * 0.02) * 0.2) * 1.44;
-        leaf.y += leaf.vy * 1.44;
-        leaf.vy += 0.0144;
+        leaf.x += (leaf.vx + Math.sin(leaf.y * 0.02) * 0.2) * 1.8;
+        leaf.y += leaf.vy * 1.8;
+        leaf.vy += 0.018;
         leaf.rot += leaf.spin;
 
         if (leaf.y > groundY - 4 && leaf.bounce < 2) {
