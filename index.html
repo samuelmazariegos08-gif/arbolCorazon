@@ -156,6 +156,13 @@
     const HEART_SIZE_MIN = 4.3; // +20%
     const HEART_SIZE_MAX = 8.4; // +20%
     const FILL_ALPHA = 0.92;
+    const HEART_COLORS = [
+      { h: 350, s: 92, l: [55, 65] }, // rojo
+      { h: 340, s: 90, l: [58, 70] }, // fucsia
+      { h: 330, s: 85, l: [60, 72] }, // rosa
+      { h: 340, s: 65, l: [78, 88] }, // rosa pálido
+      { h: 358, s: 90, l: [52, 62] }, // rojo profundo
+    ];
 
     const canvas = document.getElementById("scene");
     const ctx = canvas.getContext("2d");
@@ -196,7 +203,7 @@
 
     function buildCrown() {
       const crownHearts = [];
-      const baseHue = 350; // monocromático
+      const palette = HEART_COLORS;
       const areaFactor = Math.max(0.9, Math.min(1.6, (state.w * state.h) / (820 * 460)));
       const outlineCount = Math.floor(2600 * CROWN_DENSITY * areaFactor);
       const fillCount = Math.floor(7200 * CROWN_DENSITY * areaFactor); // 20% menos
@@ -208,12 +215,15 @@
         const p = heartPoint(t);
         const nx = p.x * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
         const ny = p.y * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
+        const tone = palette[Math.floor(rand(0, palette.length))];
+        const light = rand(tone.l[0], tone.l[1]);
         crownHearts.push({
           x: nx,
           y: ny,
           size: rand(HEART_SIZE_MIN, HEART_SIZE_MAX),
-          hue: baseHue,
-          light: rand(52, 64),
+          hue: tone.h,
+          sat: tone.s,
+          light,
           alpha: rand(0.8, 1),
         });
       }
@@ -229,12 +239,15 @@
         if (heartEq <= 0) {
           const nx = x * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
           const ny = -y * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
+          const tone = palette[Math.floor(rand(0, palette.length))];
+          const light = rand(tone.l[0], tone.l[1]);
           crownHearts.push({
             x: nx,
             y: ny,
             size: rand(HEART_SIZE_MIN, HEART_SIZE_MAX) * rand(0.9, 1.2),
-            hue: baseHue,
-            light: rand(50, 66),
+            hue: tone.h,
+            sat: tone.s,
+            light,
             alpha: rand(FILL_ALPHA, 0.98),
           });
           added += 1;
@@ -268,7 +281,7 @@
       const visible = Math.floor(state.leaves.length * progress);
       for (let i = 0; i < visible; i += 1) {
         const leaf = state.leaves[i];
-        const color = `hsla(${leaf.hue}, 92%, ${leaf.light}%, ${leaf.alpha})`;
+        const color = `hsla(${leaf.hue}, ${leaf.sat}%, ${leaf.light}%, ${leaf.alpha})`;
         drawHeart(centerX + leaf.x, centerY + leaf.y, leaf.size * 0.085, color, leaf.alpha);
       }
     }
@@ -286,6 +299,9 @@
           rot: rand(0, Math.PI * 2),
           spin: rand(-0.02, 0.02),
           alpha: rand(0.6, 0.95),
+          hue: leaf.hue,
+          sat: leaf.sat,
+          light: leaf.light,
           bounce: 0,
         });
       }
@@ -293,9 +309,9 @@
 
     function drawFalling(groundY) {
       state.falling.forEach((leaf) => {
-        leaf.x += (leaf.vx + Math.sin(leaf.y * 0.02) * 0.2) * 1.2;
-        leaf.y += leaf.vy * 1.2;
-        leaf.vy += 0.012;
+        leaf.x += (leaf.vx + Math.sin(leaf.y * 0.02) * 0.2) * 1.44;
+        leaf.y += leaf.vy * 1.44;
+        leaf.vy += 0.0144;
         leaf.rot += leaf.spin;
 
         if (leaf.y > groundY - 4 && leaf.bounce < 2) {
@@ -306,7 +322,14 @@
         }
 
         leaf.alpha -= 0.002;
-        drawHeart(leaf.x, leaf.y, leaf.size * 0.08, "hsla(350, 92%, 58%, 1)", Math.max(leaf.alpha, 0), leaf.rot);
+        drawHeart(
+          leaf.x,
+          leaf.y,
+          leaf.size * 0.08,
+          `hsla(${leaf.hue}, ${leaf.sat}%, ${leaf.light}%, 1)`,
+          Math.max(leaf.alpha, 0),
+          leaf.rot
+        );
       });
       state.falling = state.falling.filter((leaf) => leaf.y < groundY + 30 && leaf.alpha > 0);
     }
