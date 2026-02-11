@@ -150,12 +150,12 @@
     };
 
     // ====== COPA (ajusta aquí) ======
-    const CROWN_DENSITY = 1.35; // 1.0 = normal, 1.35 = súper tupido
-    const CROWN_RADIUS_FACTOR = 0.19; // tamaño base de copa
-    const JITTER_RANGE = 1.4; // menos = menos huecos
-    const HEART_SIZE_MIN = 3.2;
-    const HEART_SIZE_MAX = 6.4;
-    const FILL_ALPHA = 0.9;
+    const CROWN_DENSITY = 1.6; // 1.0 = normal, 1.6 = súper tupido
+    const CROWN_RADIUS_FACTOR = 0.2; // tamaño base de copa
+    const JITTER_RANGE = 1.2; // menos = menos huecos
+    const HEART_SIZE_MIN = 3.6;
+    const HEART_SIZE_MAX = 7.0;
+    const FILL_ALPHA = 0.92;
 
     const canvas = document.getElementById("scene");
     const ctx = canvas.getContext("2d");
@@ -199,7 +199,7 @@
       const palette = [350, 355, 358, 5, 8, 12, 340];
       const areaFactor = Math.max(0.9, Math.min(1.6, (state.w * state.h) / (820 * 460)));
       const outlineCount = Math.floor(2600 * CROWN_DENSITY * areaFactor);
-      const fillCount = Math.floor(8200 * CROWN_DENSITY * areaFactor);
+      const fillCount = Math.floor(12000 * CROWN_DENSITY * areaFactor);
       const baseRadius = CROWN_RADIUS_FACTOR * Math.min(state.w, state.h);
 
       // Contorno del corazón
@@ -218,22 +218,27 @@
         });
       }
 
-      // Relleno interno (evita huecos)
-      for (let i = 0; i < fillCount; i += 1) {
-        const t = rand(0, Math.PI * 2);
-        const p = heartPoint(t);
-        // sesgo fuerte hacia el centro para rellenar huecos
-        const inner = Math.pow(rand(0.0, 1.0), 2.2);
-        const nx = p.x * (baseRadius * (0.2 + inner * 0.8)) + rand(-JITTER_RANGE, JITTER_RANGE);
-        const ny = p.y * (baseRadius * (0.2 + inner * 0.8)) + rand(-JITTER_RANGE, JITTER_RANGE);
-        const hue = palette[Math.floor(rand(0, palette.length))];
-        crownHearts.push({
-          x: nx,
-          y: ny,
-          size: rand(HEART_SIZE_MIN, HEART_SIZE_MAX) * rand(0.9, 1.2),
-          hue,
-          alpha: rand(FILL_ALPHA, 0.95),
-        });
+      // Relleno interno (evita huecos) usando muestreo dentro del corazón
+      let tries = 0;
+      let added = 0;
+      while (added < fillCount && tries < fillCount * 8) {
+        tries += 1;
+        const x = rand(-1.2, 1.2);
+        const y = rand(-1.2, 1.2);
+        const heartEq = Math.pow(x * x + y * y - 1, 3) - x * x * y * y * y;
+        if (heartEq <= 0) {
+          const nx = x * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
+          const ny = -y * baseRadius + rand(-JITTER_RANGE, JITTER_RANGE);
+          const hue = palette[Math.floor(rand(0, palette.length))];
+          crownHearts.push({
+            x: nx,
+            y: ny,
+            size: rand(HEART_SIZE_MIN, HEART_SIZE_MAX) * rand(0.9, 1.2),
+            hue,
+            alpha: rand(FILL_ALPHA, 0.98),
+          });
+          added += 1;
+        }
       }
 
       return crownHearts;
