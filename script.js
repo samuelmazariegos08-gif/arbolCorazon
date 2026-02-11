@@ -1,15 +1,19 @@
 ﻿const canvas = document.getElementById("tree");
 const ctx = canvas.getContext("2d");
+const intro = document.getElementById("intro");
+const introHeart = document.getElementById("intro-heart");
+const baseline = document.querySelector(".baseline");
+const lines = Array.from(document.querySelectorAll(".line"));
 
 const state = {
   width: 0,
   height: 0,
   startTime: new Date("2024-01-01T00:00:00"),
-  trunkGrow: 0,
-  leavesGrow: 0,
   leaves: [],
   falling: [],
   lastTick: 0,
+  started: false,
+  startAt: 0,
 };
 
 function resize() {
@@ -53,7 +57,7 @@ function initLeaves() {
 
 function spawnFalling() {
   if (state.falling.length > 60) return;
-  if (Math.random() < 0.35) {
+  if (Math.random() < 0.28) {
     const leaf = state.leaves[Math.floor(rand(0, state.leaves.length))];
     state.falling.push({
       x: leaf.x + state.width * 0.55,
@@ -84,27 +88,6 @@ function drawHeart(x, y, size, color, alpha, rotation = 0) {
   ctx.restore();
 }
 
-function drawTrunk(baseX, baseY, height, progress) {
-  const trunkHeight = height * progress;
-  ctx.save();
-  ctx.strokeStyle = "#8b5a2b";
-  ctx.lineWidth = 14;
-  ctx.lineCap = "round";
-  ctx.beginPath();
-  ctx.moveTo(baseX, baseY);
-  ctx.lineTo(baseX, baseY - trunkHeight);
-  ctx.stroke();
-
-  ctx.lineWidth = 8;
-  ctx.beginPath();
-  ctx.moveTo(baseX, baseY - trunkHeight * 0.35);
-  ctx.lineTo(baseX + 32, baseY - trunkHeight * 0.5);
-  ctx.moveTo(baseX, baseY - trunkHeight * 0.6);
-  ctx.lineTo(baseX - 28, baseY - trunkHeight * 0.72);
-  ctx.stroke();
-  ctx.restore();
-}
-
 function drawLeaves(centerX, centerY, progress) {
   const visible = Math.floor(state.leaves.length * progress);
   for (let i = 0; i < visible; i += 1) {
@@ -125,23 +108,91 @@ function drawFalling() {
   state.falling = state.falling.filter((leaf) => leaf.y < state.height + 30 && leaf.alpha > 0);
 }
 
+function easeOutCubic(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+function drawBranch(x1, y1, x2, y2, progress, width) {
+  const px = lerp(x1, x2, progress);
+  const py = lerp(y1, y2, progress);
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(x1, y1);
+  ctx.lineTo(px, py);
+  ctx.stroke();
+}
+
+function drawTree(baseX, baseY, trunkProgress, branchProgress) {
+  ctx.save();
+  ctx.strokeStyle = "#8b5a2b";
+  ctx.lineCap = "round";
+
+  const trunkHeight = state.height * 0.46;
+  const topY = baseY - trunkHeight * trunkProgress;
+  ctx.lineWidth = 14;
+  ctx.beginPath();
+  ctx.moveTo(baseX, baseY);
+  ctx.lineTo(baseX, topY);
+  ctx.stroke();
+
+  drawBranch(baseX, baseY - trunkHeight * 0.25, baseX + 34, baseY - trunkHeight * 0.45, branchProgress, 9);
+  drawBranch(baseX, baseY - trunkHeight * 0.42, baseX - 30, baseY - trunkHeight * 0.58, branchProgress, 8);
+  drawBranch(baseX, baseY - trunkHeight * 0.6, baseX + 24, baseY - trunkHeight * 0.78, branchProgress, 7);
+  drawBranch(baseX, baseY - trunkHeight * 0.7, baseX - 22, baseY - trunkHeight * 0.88, branchProgress, 6);
+
+  ctx.restore();
+}
+
 function render(timestamp) {
   if (!state.lastTick) state.lastTick = timestamp;
-  const delta = (timestamp - state.lastTick) / 1000;
   state.lastTick = timestamp;
-
-  state.trunkGrow = Math.min(1, state.trunkGrow + delta * 0.15);
-  state.leavesGrow = Math.min(1, state.leavesGrow + delta * 0.12);
 
   ctx.clearRect(0, 0, state.width, state.height);
 
   const baseX = state.width * 0.55;
   const baseY = state.height * 0.86;
 
-  drawTrunk(baseX, baseY, state.height * 0.45, state.trunkGrow);
-  drawLeaves(baseX, baseY - state.height * 0.36, state.leavesGrow);
-  spawnFalling();
-  drawFalling();
+  if (state.started) {
+    const t = (timestamp - state.startAt) / 1000;
+    const dotDuration = 0.6;
+    const baselineDelay = 0.45;
+    const trunkDelay = 0.8;
+    const branchDelay = 1.2;
+    const leavesDelay = 1.7;
+
+    const dotT = Math.min(1, Math.max(0, t / dotDuration));
+    const trunkT = Math.min(1, Math.max(0, (t - trunkDelay) / 1.1));
+    const branchT = Math.min(1, Math.max(0, (t - branchDelay) / 1.0));
+    const leavesT = Math.min(1, Math.max(0, (t - leavesDelay) / 1.6));
+
+    const dotY = lerp(state.height * 0.35, baseY, easeOutCubic(dotT));
+    const dotX = baseX - state.width * 0.12;
+    ctx.fillStyle = "#d03c3c";
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    if (t > baselineDelay) {
+      baseline.classList.add("show");
+    }
+
+    drawTree(baseX, baseY, easeOutCubic(trunkT), easeOutCubic(branchT));
+    drawLeaves(baseX, baseY - state.height * 0.36, easeOutCubic(leavesT));
+
+    if (leavesT > 0.4) {
+      spawnFalling();
+      drawFalling();
+    }
+
+    if (t > 2.0) lines[0]?.classList.add("show");
+    if (t > 2.4) lines[1]?.classList.add("show");
+    if (t > 2.8) lines[2]?.classList.add("show");
+    if (t > 3.2) lines[3]?.classList.add("show");
+  }
 
   requestAnimationFrame(render);
 }
@@ -171,5 +222,19 @@ window.addEventListener("resize", () => {
   resize();
   initLeaves();
 });
+
+function startSequence() {
+  if (state.started) return;
+  state.started = true;
+  state.startAt = performance.now();
+  intro.classList.add("hidden");
+}
+
+intro.addEventListener("click", startSequence);
+introHeart.addEventListener("click", startSequence);
+
+setTimeout(() => {
+  if (!state.started) startSequence();
+}, 2500);
 
 init();

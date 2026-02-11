@@ -12,22 +12,35 @@
   <body>
     <main class="scene">
       <section class="card">
-        <div class="letter">
-        <p class="eyebrow">Para el amor de mi vida:</p>
-        <p>
-          Si pudiera elegir un lugar seguro, sería a tu lado. Cuanto mas tiempo
-          estoy contigo más te amo.
-        </p>
-        <p class="signature">— I love You!</p>
+        <div class="intro" id="intro">
+          <div class="intro-heart" id="intro-heart"></div>
+          <div class="intro-text">San Valentín</div>
+          <div class="intro-line"></div>
+          <div class="intro-pointer" id="intro-pointer">Toca</div>
+        </div>
 
-        <div class="counter">
-          <div class="counter-label">Mi amor por ti comenzó hace...</div>
-          <div class="counter-time" id="counter">00 días 00 horas 00 minutos 00 segundos</div>
+        <div class="content">
+          <div class="letter" id="letter">
+            <p class="eyebrow">Para el amor de mi vida:</p>
+            <p class="line line-1">
+              Si pudiera elegir un lugar seguro, sería a tu lado.
+            </p>
+            <p class="line line-2">
+              Cuanto mas tiempo estoy contigo más te amo.
+            </p>
+            <p class="signature line line-3">— I love You!</p>
+
+            <div class="counter line line-4">
+              <div class="counter-label">Mi amor por ti comenzó hace...</div>
+              <div class="counter-time" id="counter">00 días 00 horas 00 minutos 00 segundos</div>
+            </div>
+          </div>
+
+          <div class="canvas-wrap">
+            <canvas id="tree"></canvas>
+          </div>
         </div>
-        </div>
-        <div class="canvas-wrap">
-          <canvas id="tree"></canvas>
-        </div>
+
         <div class="baseline"></div>
       </section>
     </main>
