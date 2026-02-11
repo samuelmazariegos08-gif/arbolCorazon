@@ -43,7 +43,7 @@ function initLeaves() {
     const p = heartPoint(t);
     const scale = rand(0.9, 1.25);
     const radius = rand(6, 16);
-    const palette = [350, 355, 358, 5, 10, 340];
+    const palette = [350, 355, 358, 5, 8, 12, 340];
     const hue = palette[Math.floor(rand(0, palette.length))];
     state.leaves.push({
       x: p.x * 6.5 * scale,
@@ -63,8 +63,8 @@ function spawnFalling() {
       x: leaf.x + state.width * 0.55,
       y: leaf.y + state.height * 0.32,
       size: rand(6, 12),
-      vx: rand(-0.25, 0.25),
-      vy: rand(0.5, 1.3),
+      vx: rand(-0.55, -0.12),
+      vy: rand(0.45, 1.15),
       rot: rand(0, Math.PI * 2),
       spin: rand(-0.02, 0.02),
       alpha: rand(0.6, 0.95),
@@ -92,14 +92,14 @@ function drawLeaves(centerX, centerY, progress) {
   const visible = Math.floor(state.leaves.length * progress);
   for (let i = 0; i < visible; i += 1) {
     const leaf = state.leaves[i];
-    const color = `hsla(${leaf.hue}, 80%, 60%, ${leaf.alpha})`;
+    const color = `hsla(${leaf.hue}, 92%, 58%, ${leaf.alpha})`;
     drawHeart(centerX + leaf.x, centerY + leaf.y, leaf.size * 0.08, color, leaf.alpha);
   }
 }
 
 function drawFalling() {
   state.falling.forEach((leaf) => {
-    leaf.x += leaf.vx;
+    leaf.x += leaf.vx + Math.sin(leaf.y * 0.02) * 0.15;
     leaf.y += leaf.vy;
     leaf.rot += leaf.spin;
     leaf.alpha -= 0.003;
@@ -126,7 +126,7 @@ function drawBranch(x1, y1, x2, y2, progress, width) {
   ctx.stroke();
 }
 
-function drawTree(baseX, baseY, trunkProgress, branchProgress) {
+function drawTree(baseX, baseY, trunkProgress, branchProgress, sway) {
   ctx.save();
   ctx.strokeStyle = "#8b5a2b";
   ctx.lineCap = "round";
@@ -136,13 +136,41 @@ function drawTree(baseX, baseY, trunkProgress, branchProgress) {
   ctx.lineWidth = 14;
   ctx.beginPath();
   ctx.moveTo(baseX, baseY);
-  ctx.lineTo(baseX, topY);
+  ctx.lineTo(baseX + sway * 10, topY);
   ctx.stroke();
 
-  drawBranch(baseX, baseY - trunkHeight * 0.25, baseX + 34, baseY - trunkHeight * 0.45, branchProgress, 9);
-  drawBranch(baseX, baseY - trunkHeight * 0.42, baseX - 30, baseY - trunkHeight * 0.58, branchProgress, 8);
-  drawBranch(baseX, baseY - trunkHeight * 0.6, baseX + 24, baseY - trunkHeight * 0.78, branchProgress, 7);
-  drawBranch(baseX, baseY - trunkHeight * 0.7, baseX - 22, baseY - trunkHeight * 0.88, branchProgress, 6);
+  drawBranch(
+    baseX + sway * 2,
+    baseY - trunkHeight * 0.25,
+    baseX + 34 + sway * 8,
+    baseY - trunkHeight * 0.45,
+    branchProgress,
+    9
+  );
+  drawBranch(
+    baseX + sway * 2,
+    baseY - trunkHeight * 0.42,
+    baseX - 30 + sway * 6,
+    baseY - trunkHeight * 0.58,
+    branchProgress,
+    8
+  );
+  drawBranch(
+    baseX + sway * 3,
+    baseY - trunkHeight * 0.6,
+    baseX + 24 + sway * 7,
+    baseY - trunkHeight * 0.78,
+    branchProgress,
+    7
+  );
+  drawBranch(
+    baseX + sway * 3,
+    baseY - trunkHeight * 0.7,
+    baseX - 22 + sway * 5,
+    baseY - trunkHeight * 0.88,
+    branchProgress,
+    6
+  );
 
   ctx.restore();
 }
@@ -180,7 +208,8 @@ function render(timestamp) {
       baseline.classList.add("show");
     }
 
-    drawTree(baseX, baseY, easeOutCubic(trunkT), easeOutCubic(branchT));
+    const sway = Math.sin(t * 1.1) * 0.6;
+    drawTree(baseX, baseY, easeOutCubic(trunkT), easeOutCubic(branchT), sway);
     drawLeaves(baseX, baseY - state.height * 0.36, easeOutCubic(leavesT));
 
     if (leavesT > 0.4) {
