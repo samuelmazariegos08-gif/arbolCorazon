@@ -383,17 +383,35 @@
 
     const coupleImg = document.getElementById("couple-img");
     let coupleReady = false;
+    let coupleCanvas = null;
     coupleImg.addEventListener("load", () => {
+      // Remove near-white background to blend with theme
+      coupleCanvas = document.createElement("canvas");
+      coupleCanvas.width = coupleImg.naturalWidth;
+      coupleCanvas.height = coupleImg.naturalHeight;
+      const cctx = coupleCanvas.getContext("2d");
+      cctx.drawImage(coupleImg, 0, 0);
+      const imgData = cctx.getImageData(0, 0, coupleCanvas.width, coupleCanvas.height);
+      const data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        if (r > 245 && g > 245 && b > 245) {
+          data[i + 3] = 0;
+        }
+      }
+      cctx.putImageData(imgData, 0, 0);
       coupleReady = true;
     });
 
     function drawBenchAndCouple(groundY) {
-      if (coupleReady) {
+      if (coupleReady && coupleCanvas) {
         const imgW = state.w * 0.16;
-        const imgH = (coupleImg.naturalHeight / coupleImg.naturalWidth) * imgW;
+        const imgH = (coupleCanvas.height / coupleCanvas.width) * imgW;
         const x = state.w * CONFIG.treeX - state.w * 0.28;
         const y = groundY - imgH + state.h * 0.01;
-        ctx.drawImage(coupleImg, x, y, imgW, imgH);
+        ctx.drawImage(coupleCanvas, x, y, imgW, imgH);
         return;
       }
       const x = state.w * CONFIG.treeX - state.w * 0.45;
