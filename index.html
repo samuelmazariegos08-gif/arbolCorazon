@@ -462,7 +462,7 @@
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ground");
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(0, groundY);
+      ctx.moveTo(state.w * 0.05, groundY);
       ctx.lineTo(state.w, groundY);
       ctx.stroke();
 
