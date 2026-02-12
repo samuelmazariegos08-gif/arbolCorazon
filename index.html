@@ -407,9 +407,9 @@
 
     function drawBenchAndCouple(groundY) {
       if (coupleReady && coupleCanvas) {
-        const imgW = state.w * 0.16;
+        const imgW = state.w * 0.184; // +15% tamaño
         const imgH = (coupleCanvas.height / coupleCanvas.width) * imgW;
-        const x = state.w * CONFIG.treeX - state.w * 0.28;
+        const x = state.w * CONFIG.treeX - state.w * 0.364; // 30% más a la izquierda
         const y = groundY - imgH + state.h * 0.01;
         ctx.drawImage(coupleCanvas, x, y, imgW, imgH);
         return;
