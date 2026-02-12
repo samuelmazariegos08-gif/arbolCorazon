@@ -289,14 +289,14 @@
     }
 
     function spawnFalling() {
-      if (state.falling.length > 70) return;
-      if (Math.random() < 0.3) {
+      if (state.falling.length > 90) return;
+      if (Math.random() < 0.375) {
         const leaf = state.leaves[Math.floor(rand(0, state.leaves.length))];
         state.falling.push({
           x: leaf.x + state.w * CONFIG.treeX,
           y: leaf.y + state.h * 0.32,
           size: rand(9, 18), // +50% tamaño
-          vx: rand(-0.9, -0.25), // más hacia el texto
+          vx: rand(-1.1, -0.3), // más hacia el texto (+25%)
           vy: rand(0.45, 1.2),
           rot: rand(0, Math.PI * 2),
           spin: rand(-0.02, 0.02),
@@ -312,7 +312,7 @@
     function drawFalling(groundY) {
       state.falling.forEach((leaf) => {
         // Viento constante hacia el texto (izquierda)
-        leaf.x += (leaf.vx - 0.08 + Math.sin(leaf.y * 0.02) * 0.2) * 1.8;
+        leaf.x += (leaf.vx - 0.10 + Math.sin(leaf.y * 0.02) * 0.2) * 1.8;
         leaf.y += leaf.vy * 1.8;
         leaf.vy += 0.018;
         leaf.rot += leaf.spin;
