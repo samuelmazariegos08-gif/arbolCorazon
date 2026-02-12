@@ -57,6 +57,20 @@
       font-size: clamp(1.5rem, 3vw, 2.5rem);
       color: #c83d5c;
       letter-spacing: 0.03em;
+      animation: floatTitle 5s ease-in-out infinite;
+    }
+
+    .headline .heart {
+      color: #e84d6a;
+      margin: 0 0.2rem;
+      display: inline-block;
+      transform: translateY(-0.05em);
+    }
+
+    @keyframes floatTitle {
+      0% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
+      100% { transform: translateX(-50%) translateY(0); }
     }
 
     .left {
@@ -137,7 +151,7 @@
 </head>
 <body>
   <div class="frame">
-    <div class="headline">¡Feliz San Valentín!</div>
+    <div class="headline"><span class="heart">❤</span>Feliz San Valentín<span class="heart">❤</span></div>
     <div class="layout">
       <div class="left">
         <div class="type-line" id="title"></div>
