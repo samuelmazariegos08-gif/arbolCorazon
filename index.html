@@ -383,19 +383,24 @@
     function drawBenchAndCouple(groundY) {
       const x = state.w * CONFIG.treeX - state.w * 0.45;
       const y = groundY;
-      const benchWidth = state.w * 0.2;
-      const benchHeight = state.h * 0.022;
+      const benchWidth = state.w * 0.22;
+      const benchHeight = state.h * 0.024;
 
       ctx.save();
-      ctx.strokeStyle = "#6a5a50";
-      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = "#4a3c34";
+      ctx.fillStyle = "#4a3c34";
+      ctx.lineWidth = 3.2;
       ctx.lineCap = "round";
 
-      // Bench seat
-      ctx.beginPath();
-      ctx.moveTo(x, y - benchHeight);
-      ctx.lineTo(x + benchWidth, y - benchHeight);
-      ctx.stroke();
+      // Bench seat + slats
+      const seatY = y - benchHeight;
+      for (let i = 0; i < 3; i += 1) {
+        const yy = seatY - i * (benchHeight * 0.55);
+        ctx.beginPath();
+        ctx.moveTo(x, yy);
+        ctx.lineTo(x + benchWidth, yy);
+        ctx.stroke();
+      }
 
       // Bench legs
       ctx.beginPath();
@@ -405,57 +410,59 @@
       ctx.lineTo(x + benchWidth * 0.85, y);
       ctx.stroke();
 
-      // Couple silhouettes (detallado)
-      ctx.strokeStyle = "#4a3c34";
-      ctx.lineWidth = 4.5;
+      // Couple silhouettes (relleno)
+      ctx.lineWidth = 3.6;
 
       const headR = state.h * 0.017;
       const headY = y - benchHeight - headR * 2.0;
       const leftHeadX = x + benchWidth * 0.33;
       const rightHeadX = x + benchWidth * 0.58;
 
+      // Heads
       ctx.beginPath();
       ctx.arc(leftHeadX, headY, headR, 0, Math.PI * 2);
       ctx.arc(rightHeadX, headY, headR, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.fill();
 
       // Hair (boy short, girl longer)
       ctx.beginPath();
       ctx.arc(leftHeadX - headR * 0.2, headY - headR * 0.1, headR * 0.95, Math.PI * 1.05, Math.PI * 2.05);
-      ctx.arc(rightHeadX + headR * 0.1, headY - headR * 0.05, headR * 1.15, Math.PI * 0.9, Math.PI * 2.2);
-      ctx.stroke();
+      ctx.arc(rightHeadX + headR * 0.1, headY - headR * 0.05, headR * 1.2, Math.PI * 0.85, Math.PI * 2.2);
+      ctx.fill();
 
-      // Bodies
+      // Bodies (filled)
+      const bodyTopY = headY + headR * 0.9;
+      const bodyBottomY = y - benchHeight * 1.2;
       ctx.beginPath();
-      ctx.moveTo(leftHeadX, headY + headR);
-      ctx.lineTo(leftHeadX, y - benchHeight * 1.2);
-      ctx.moveTo(rightHeadX, headY + headR);
-      ctx.lineTo(rightHeadX, y - benchHeight * 1.2);
-      ctx.stroke();
+      ctx.moveTo(leftHeadX - headR * 0.6, bodyTopY);
+      ctx.lineTo(leftHeadX + headR * 0.6, bodyTopY);
+      ctx.lineTo(leftHeadX + headR * 0.4, bodyBottomY);
+      ctx.lineTo(leftHeadX - headR * 0.4, bodyBottomY);
+      ctx.closePath();
+      ctx.fill();
 
-      // Backs leaning + shoulders
       ctx.beginPath();
-      ctx.moveTo(leftHeadX - headR * 0.7, headY + headR);
-      ctx.lineTo(leftHeadX - headR * 0.2, y - benchHeight * 1.1);
-      ctx.moveTo(rightHeadX + headR * 0.7, headY + headR);
-      ctx.lineTo(rightHeadX + headR * 0.2, y - benchHeight * 1.1);
-      ctx.moveTo(leftHeadX - headR * 0.6, headY + headR * 0.6);
-      ctx.lineTo(leftHeadX + headR * 0.2, headY + headR * 0.8);
-      ctx.moveTo(rightHeadX - headR * 0.2, headY + headR * 0.8);
-      ctx.lineTo(rightHeadX + headR * 0.6, headY + headR * 0.6);
-      ctx.stroke();
+      ctx.moveTo(rightHeadX - headR * 0.7, bodyTopY);
+      ctx.lineTo(rightHeadX + headR * 0.7, bodyTopY);
+      ctx.lineTo(rightHeadX + headR * 0.5, bodyBottomY);
+      ctx.lineTo(rightHeadX - headR * 0.5, bodyBottomY);
+      ctx.closePath();
+      ctx.fill();
 
       // Legs
       ctx.beginPath();
-      ctx.moveTo(leftHeadX - headR * 0.2, y - benchHeight * 1.1);
-      ctx.lineTo(leftHeadX - headR * 0.6, y);
-      ctx.moveTo(leftHeadX + headR * 0.2, y - benchHeight * 1.1);
-      ctx.lineTo(leftHeadX + headR * 0.6, y);
-      ctx.moveTo(rightHeadX - headR * 0.2, y - benchHeight * 1.1);
-      ctx.lineTo(rightHeadX - headR * 0.6, y);
-      ctx.moveTo(rightHeadX + headR * 0.2, y - benchHeight * 1.1);
-      ctx.lineTo(rightHeadX + headR * 0.6, y);
+      ctx.moveTo(leftHeadX - headR * 0.1, bodyBottomY);
+      ctx.lineTo(leftHeadX - headR * 0.5, y);
+      ctx.moveTo(leftHeadX + headR * 0.1, bodyBottomY);
+      ctx.lineTo(leftHeadX + headR * 0.5, y);
+      ctx.moveTo(rightHeadX - headR * 0.1, bodyBottomY);
+      ctx.lineTo(rightHeadX - headR * 0.5, y);
+      ctx.moveTo(rightHeadX + headR * 0.1, bodyBottomY);
+      ctx.lineTo(rightHeadX + headR * 0.5, y);
       ctx.stroke();
+
+      // Heart above
+      drawHeart(x + benchWidth * 0.48, headY - headR * 2.2, 0.9, "#4a3c34", 1);
 
       ctx.restore();
     }
