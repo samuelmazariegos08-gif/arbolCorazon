@@ -54,7 +54,7 @@
       left: 50%;
       transform: translateX(-50%);
       font-family: "Georgia", "Times New Roman", serif;
-      font-size: clamp(1.2rem, 2.4vw, 2rem);
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
       color: #c83d5c;
       letter-spacing: 0.03em;
     }
@@ -181,6 +181,7 @@
 
     const canvas = document.getElementById("scene");
     const ctx = canvas.getContext("2d");
+    const headlineEl = document.querySelector(".headline");
 
     const state = {
       w: 0,
@@ -305,6 +306,7 @@
       if (state.falling.length > 90) return;
       if (Math.random() < 0.375) {
         const leaf = state.leaves[Math.floor(rand(0, state.leaves.length))];
+        const isHeadline = Math.random() < 0.22;
         state.falling.push({
           x: leaf.x + state.w * CONFIG.treeX,
           y: leaf.y + state.h * 0.32,
@@ -318,17 +320,30 @@
           sat: leaf.sat,
           light: leaf.light,
           bounce: 0,
+          targetHeadline: isHeadline,
         });
       }
     }
 
     function drawFalling(groundY) {
+      const headlineRect = headlineEl.getBoundingClientRect();
+      const canvasRect = canvas.getBoundingClientRect();
+      const hx = headlineRect.left - canvasRect.left + headlineRect.width / 2;
+      const hy = headlineRect.top - canvasRect.top + headlineRect.height / 2;
+
       state.falling.forEach((leaf) => {
         // Viento constante hacia el texto (izquierda)
         leaf.x += (leaf.vx - 0.10 + Math.sin(leaf.y * 0.02) * 0.2) * 1.8;
         leaf.y += leaf.vy * 1.8;
         leaf.vy += 0.018;
         leaf.rot += leaf.spin;
+
+        if (leaf.targetHeadline) {
+          const dx = hx - leaf.x;
+          const dy = hy - leaf.y;
+          leaf.x += dx * 0.006;
+          leaf.y += dy * 0.006;
+        }
 
         if (leaf.y > groundY - 4 && leaf.bounce < 2) {
           leaf.y = groundY - 4;
