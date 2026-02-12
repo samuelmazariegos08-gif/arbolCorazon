@@ -295,8 +295,8 @@
         state.falling.push({
           x: leaf.x + state.w * CONFIG.treeX,
           y: leaf.y + state.h * 0.32,
-          size: rand(6, 12),
-          vx: rand(-0.6, -0.15),
+          size: rand(9, 18), // +50% tamaño
+          vx: rand(-0.9, -0.25), // más hacia el texto
           vy: rand(0.45, 1.2),
           rot: rand(0, Math.PI * 2),
           spin: rand(-0.02, 0.02),
@@ -311,7 +311,8 @@
 
     function drawFalling(groundY) {
       state.falling.forEach((leaf) => {
-        leaf.x += (leaf.vx + Math.sin(leaf.y * 0.02) * 0.2) * 1.8;
+        // Viento constante hacia el texto (izquierda)
+        leaf.x += (leaf.vx - 0.08 + Math.sin(leaf.y * 0.02) * 0.2) * 1.8;
         leaf.y += leaf.vy * 1.8;
         leaf.vy += 0.018;
         leaf.rot += leaf.spin;
