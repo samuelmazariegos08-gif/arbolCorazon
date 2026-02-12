@@ -137,6 +137,7 @@
         </div>
       </div>
       <canvas id="scene"></canvas>
+      <img id="couple-img" src="assets/pareja.png" alt="Pareja en banca" style="display:none;" />
     </div>
   </div>
 
@@ -380,7 +381,21 @@
       ctx.restore();
     }
 
+    const coupleImg = document.getElementById("couple-img");
+    let coupleReady = false;
+    coupleImg.addEventListener("load", () => {
+      coupleReady = true;
+    });
+
     function drawBenchAndCouple(groundY) {
+      if (coupleReady) {
+        const imgW = state.w * 0.16;
+        const imgH = (coupleImg.naturalHeight / coupleImg.naturalWidth) * imgW;
+        const x = state.w * CONFIG.treeX - state.w * 0.28;
+        const y = groundY - imgH + state.h * 0.01;
+        ctx.drawImage(coupleImg, x, y, imgW, imgH);
+        return;
+      }
       const x = state.w * CONFIG.treeX - state.w * 0.45;
       const y = groundY;
       const benchWidth = state.w * 0.22;
