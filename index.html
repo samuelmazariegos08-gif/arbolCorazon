@@ -381,7 +381,7 @@
     }
 
     function drawBenchAndCouple(groundY) {
-      const x = state.w * CONFIG.treeX - state.w * 0.33;
+      const x = state.w * CONFIG.treeX - state.w * 0.45;
       const y = groundY;
       const benchWidth = state.w * 0.2;
       const benchHeight = state.h * 0.022;
@@ -417,6 +417,12 @@
       ctx.beginPath();
       ctx.arc(leftHeadX, headY, headR, 0, Math.PI * 2);
       ctx.arc(rightHeadX, headY, headR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Hair (boy short, girl longer)
+      ctx.beginPath();
+      ctx.arc(leftHeadX - headR * 0.2, headY - headR * 0.1, headR * 0.95, Math.PI * 1.05, Math.PI * 2.05);
+      ctx.arc(rightHeadX + headR * 0.1, headY - headR * 0.05, headR * 1.15, Math.PI * 0.9, Math.PI * 2.2);
       ctx.stroke();
 
       // Bodies
