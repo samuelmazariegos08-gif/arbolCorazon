@@ -380,6 +380,64 @@
       ctx.restore();
     }
 
+    function drawBenchAndCouple(groundY) {
+      const x = state.w * CONFIG.treeX - state.w * 0.22;
+      const y = groundY;
+      const benchWidth = state.w * 0.18;
+      const benchHeight = state.h * 0.02;
+
+      ctx.save();
+      ctx.strokeStyle = "#6a5a50";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+
+      // Bench seat
+      ctx.beginPath();
+      ctx.moveTo(x, y - benchHeight);
+      ctx.lineTo(x + benchWidth, y - benchHeight);
+      ctx.stroke();
+
+      // Bench legs
+      ctx.beginPath();
+      ctx.moveTo(x + benchWidth * 0.15, y - benchHeight);
+      ctx.lineTo(x + benchWidth * 0.15, y);
+      ctx.moveTo(x + benchWidth * 0.85, y - benchHeight);
+      ctx.lineTo(x + benchWidth * 0.85, y);
+      ctx.stroke();
+
+      // Couple silhouettes (simple)
+      ctx.strokeStyle = "#4a3c34";
+      ctx.lineWidth = 4;
+
+      const headR = state.h * 0.015;
+      const headY = y - benchHeight - headR * 2.1;
+      const leftHeadX = x + benchWidth * 0.35;
+      const rightHeadX = x + benchWidth * 0.55;
+
+      ctx.beginPath();
+      ctx.arc(leftHeadX, headY, headR, 0, Math.PI * 2);
+      ctx.arc(rightHeadX, headY, headR, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Bodies
+      ctx.beginPath();
+      ctx.moveTo(leftHeadX, headY + headR);
+      ctx.lineTo(leftHeadX, y - benchHeight);
+      ctx.moveTo(rightHeadX, headY + headR);
+      ctx.lineTo(rightHeadX, y - benchHeight);
+      ctx.stroke();
+
+      // Backs leaning
+      ctx.beginPath();
+      ctx.moveTo(leftHeadX - headR * 0.6, headY + headR);
+      ctx.lineTo(leftHeadX - headR * 0.2, y - benchHeight);
+      ctx.moveTo(rightHeadX + headR * 0.6, headY + headR);
+      ctx.lineTo(rightHeadX + headR * 0.2, y - benchHeight);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
     function updateCounter() {
       const now = new Date();
       const diff = Math.max(0, now - state.startTime);
@@ -462,9 +520,11 @@
       ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--ground");
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(state.w * 0.05, groundY);
+      ctx.moveTo(0, groundY);
       ctx.lineTo(state.w, groundY);
       ctx.stroke();
+
+      drawBenchAndCouple(groundY);
 
       updateDot(groundY);
 
