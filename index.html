@@ -381,14 +381,14 @@
     }
 
     function drawBenchAndCouple(groundY) {
-      const x = state.w * CONFIG.treeX - state.w * 0.22;
+      const x = state.w * CONFIG.treeX - state.w * 0.33;
       const y = groundY;
-      const benchWidth = state.w * 0.18;
-      const benchHeight = state.h * 0.02;
+      const benchWidth = state.w * 0.2;
+      const benchHeight = state.h * 0.022;
 
       ctx.save();
       ctx.strokeStyle = "#6a5a50";
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.lineCap = "round";
 
       // Bench seat
@@ -405,14 +405,14 @@
       ctx.lineTo(x + benchWidth * 0.85, y);
       ctx.stroke();
 
-      // Couple silhouettes (simple)
+      // Couple silhouettes (detallado)
       ctx.strokeStyle = "#4a3c34";
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 4.5;
 
-      const headR = state.h * 0.015;
-      const headY = y - benchHeight - headR * 2.1;
-      const leftHeadX = x + benchWidth * 0.35;
-      const rightHeadX = x + benchWidth * 0.55;
+      const headR = state.h * 0.017;
+      const headY = y - benchHeight - headR * 2.0;
+      const leftHeadX = x + benchWidth * 0.33;
+      const rightHeadX = x + benchWidth * 0.58;
 
       ctx.beginPath();
       ctx.arc(leftHeadX, headY, headR, 0, Math.PI * 2);
@@ -422,17 +422,33 @@
       // Bodies
       ctx.beginPath();
       ctx.moveTo(leftHeadX, headY + headR);
-      ctx.lineTo(leftHeadX, y - benchHeight);
+      ctx.lineTo(leftHeadX, y - benchHeight * 1.2);
       ctx.moveTo(rightHeadX, headY + headR);
-      ctx.lineTo(rightHeadX, y - benchHeight);
+      ctx.lineTo(rightHeadX, y - benchHeight * 1.2);
       ctx.stroke();
 
-      // Backs leaning
+      // Backs leaning + shoulders
       ctx.beginPath();
-      ctx.moveTo(leftHeadX - headR * 0.6, headY + headR);
-      ctx.lineTo(leftHeadX - headR * 0.2, y - benchHeight);
-      ctx.moveTo(rightHeadX + headR * 0.6, headY + headR);
-      ctx.lineTo(rightHeadX + headR * 0.2, y - benchHeight);
+      ctx.moveTo(leftHeadX - headR * 0.7, headY + headR);
+      ctx.lineTo(leftHeadX - headR * 0.2, y - benchHeight * 1.1);
+      ctx.moveTo(rightHeadX + headR * 0.7, headY + headR);
+      ctx.lineTo(rightHeadX + headR * 0.2, y - benchHeight * 1.1);
+      ctx.moveTo(leftHeadX - headR * 0.6, headY + headR * 0.6);
+      ctx.lineTo(leftHeadX + headR * 0.2, headY + headR * 0.8);
+      ctx.moveTo(rightHeadX - headR * 0.2, headY + headR * 0.8);
+      ctx.lineTo(rightHeadX + headR * 0.6, headY + headR * 0.6);
+      ctx.stroke();
+
+      // Legs
+      ctx.beginPath();
+      ctx.moveTo(leftHeadX - headR * 0.2, y - benchHeight * 1.1);
+      ctx.lineTo(leftHeadX - headR * 0.6, y);
+      ctx.moveTo(leftHeadX + headR * 0.2, y - benchHeight * 1.1);
+      ctx.lineTo(leftHeadX + headR * 0.6, y);
+      ctx.moveTo(rightHeadX - headR * 0.2, y - benchHeight * 1.1);
+      ctx.lineTo(rightHeadX - headR * 0.6, y);
+      ctx.moveTo(rightHeadX + headR * 0.2, y - benchHeight * 1.1);
+      ctx.lineTo(rightHeadX + headR * 0.6, y);
       ctx.stroke();
 
       ctx.restore();
