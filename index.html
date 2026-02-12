@@ -131,6 +131,11 @@
         order: 2;
         font-size: 0.98rem;
       }
+
+      .headline {
+        font-size: clamp(1.2rem, 5vw, 1.8rem);
+        top: 0.6rem;
+      }
     }
 
     @media (max-width: 640px) {
@@ -145,6 +150,12 @@
 
       .left {
         font-size: 0.95rem;
+      }
+
+      .headline {
+        font-size: clamp(1.1rem, 6vw, 1.6rem);
+        text-align: center;
+        width: 100%;
       }
     }
   </style>
