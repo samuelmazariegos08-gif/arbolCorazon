@@ -102,6 +102,17 @@
       margin-bottom: 0.2rem;
     }
 
+    .audio-hint {
+      position: absolute;
+      right: clamp(0.8rem, 2vw, 1.6rem);
+      bottom: clamp(0.8rem, 2vw, 1.6rem);
+      font-size: 0.8rem;
+      color: rgba(74, 60, 52, 0.7);
+      background: rgba(255, 255, 255, 0.6);
+      padding: 0.3rem 0.6rem;
+      border-radius: 999px;
+    }
+
     canvas {
       width: 100%;
       height: 100%;
@@ -175,7 +186,11 @@
       </div>
       <canvas id="scene"></canvas>
       <img id="couple-img" src="assets/pareja.png" alt="Pareja en banca" style="display:none;" />
+      <audio id="bg-audio" preload="auto">
+        <source src="assets/Alvaro Diaz  - Deportivo feat  Caleb Calloway & Cazzu.mp3" type="audio/mpeg" />
+      </audio>
     </div>
+    <div class="audio-hint" id="audio-hint">Toca para activar el sonido</div>
   </div>
 
   <script>
@@ -207,6 +222,8 @@
     const canvas = document.getElementById("scene");
     const ctx = canvas.getContext("2d");
     const headlineEl = document.querySelector(".headline");
+    const audioEl = document.getElementById("bg-audio");
+    const audioHint = document.getElementById("audio-hint");
 
     const state = {
       w: 0,
@@ -674,6 +691,27 @@
       resize();
       initLeaves();
     });
+
+    // Audio autoplay from 10s (may require user gesture on mobile)
+    function startAudio() {
+      if (!audioEl) return;
+      audioEl.currentTime = 10;
+      audioEl.play().then(() => {
+        if (audioHint) audioHint.style.display = "none";
+      }).catch(() => {
+        if (audioHint) audioHint.style.display = "block";
+      });
+    }
+
+    // Try autoplay after load
+    window.addEventListener("load", () => {
+      startAudio();
+    });
+
+    // Fallback: user gesture to enable audio
+    document.addEventListener("click", () => {
+      startAudio();
+    }, { once: true });
 
     init();
   </script>
