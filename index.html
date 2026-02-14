@@ -39,6 +39,15 @@
       padding: clamp(1.2rem, 2.5vw, 2.6rem);
     }
 
+    .watermark {
+      position: absolute;
+      inset: 0;
+      background: url("assets/fondo.png") center / cover no-repeat;
+      opacity: 0.18;
+      mix-blend-mode: multiply;
+      pointer-events: none;
+    }
+
     .layout {
       position: absolute;
       inset: clamp(1rem, 2vw, 2.2rem);
@@ -173,6 +182,7 @@
 </head>
 <body>
   <div class="frame">
+    <div class="watermark" aria-hidden="true"></div>
     <div class="headline"><span class="heart">❤</span>Felíz San Valentín<span class="heart">❤</span></div>
     <div class="layout">
       <div class="left">
